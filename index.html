@@ -3,143 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Alaska 2026 Family Trip</title>
+    <title>Alaska Trip 2026</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vuedraggable/4.1.0/vuedraggable.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
     <style>
-        :root { --alaska-blue: #D6EAF8; }
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #F0F7FA; overflow-x: hidden; }
-        .banner-container { height: 250px; position: relative; z-index: 1; }
-        .banner-img { width: 100%; height: 100%; object-fit: cover; }
-        .content-layer { margin-top: -40px; border-radius: 40px 40px 0 0; position: relative; z-index: 10; background: white; min-h: 100vh; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .tab-active { color: #3B82F6; background: rgba(255, 255, 255, 0.9); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        .date-item.active { background: #3B82F6; color: white; transform: scale(1.1); }
-        .glass-nav { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); }
+        :root {
+            --alaska-sky-blue: #B9D9EB; /* 延伸自圖片的天空藍 */
+            --ice-white: #F8FBFF;
+        }
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--alaska-sky-blue);
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* 頁首圖片容器 */
+        .banner-container {
+            width: 100%;
+            height: 420px; /* 針對手機瀏覽調整的高度，確保人物完整 */
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .banner-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center bottom;
+        }
+        /* 圓弧過渡層 */
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+            margin-top: -60px; /* 負邊距向上拉動 */
+            background-color: var(--ice-white);
+            border-radius: 40px 40px 0 0;
+            min-height: 100vh;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
+            padding-bottom: 100px;
+        }
+        /* 橫向滑動日期選單 */
+        .date-scroll {
+            display: flex;
+            overflow-x: auto;
+            gap: 12px;
+            padding: 20px 0;
+            scrollbar-width: none; /* Firefox */
+        }
+        .date-scroll::-webkit-scrollbar { display: none; }
+        
+        .date-card {
+            flex: 0 0 60px;
+            height: 85px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        .date-card.active {
+            background: #3B82F6;
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+            transform: translateY(-5px);
+        }
+        /* 行程卡片日系極簡感 */
+        .itinerary-card {
+            background: white;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 24px;
+            padding: 16px;
+            margin-bottom: 16px;
+            transition: transform 0.2s;
+        }
+        .itinerary-card:active { transform: scale(0.98); }
+        
+        /* 浮動 Tab 導覽列 */
+        .floating-tabs {
+            position: absolute;
+            top: 20px;
+            right: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 30;
+        }
+        .tab-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            items-center: center;
+            justify-content: center;
+            color: #475569;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            background: #3B82F6;
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <div id="app" class="max-w-md mx-auto min-h-screen shadow-xl relative">
+    <div id="app" class="max-w-md mx-auto relative">
         
         <header class="banner-container">
-            <img src="alaska_jpg.jpg" class="banner-img" alt="Alaska Banner">
+            <img src="alaska_pic.jpg" class="banner-img" alt="Alaska Cruise">
             
-            <div class="absolute bottom-12 right-4 flex gap-2 z-20">
+            <div class="floating-tabs">
                 <button v-for="t in tabs" :key="t.id" @click="currentTab = t.id" 
-                    :class="['p-3 rounded-full glass-nav transition-all', currentTab === t.id ? 'tab-active' : 'text-slate-600']">
-                    <i :class="['bi', t.icon]"></i>
+                    :class="['tab-btn', currentTab === t.id ? 'active' : '']">
+                    <i :class="['bi', t.icon, 'text-xl']"></i>
                 </button>
             </div>
         </header>
 
-        <main class="content-layer p-5">
+        <div class="content-wrapper px-6">
             
-            <div v-if="currentTab === 'schedule'">
-                <div class="bg-blue-50 rounded-2xl p-4 mb-4 flex items-center justify-between border border-blue-100">
+            <div v-if="currentTab === 'itinerary'">
+                <div class="pt-8 mb-4 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <i class="bi bi-cloud-snow text-3xl text-blue-400"></i>
                         <div>
-                            <p class="text-xs text-blue-600">目前天氣</p>
-                            <p class="text-xl font-bold text-slate-700">12°C / <span class="text-sm font-normal">體感 10°C</span></p>
+                            <p class="text-sm font-bold text-slate-700">Juneau, Alaska</p>
+                            <p class="text-xs text-slate-400">下雪 · 體感 2°C</p>
                         </div>
                     </div>
-                    <p class="text-xs text-slate-400">Vancouver</p>
+                    <div class="text-right">
+                        <span class="text-2xl font-bold text-slate-800">4°C</span>
+                    </div>
                 </div>
 
-                <div class="flex overflow-x-auto gap-3 pb-6 hide-scrollbar">
-                    <div v-for="d in dates" :key="d.full" @click="selectedDate = d.full"
-                        :class="['flex-shrink-0 w-14 h-20 rounded-2xl flex flex-col items-center justify-center transition-all date-item shadow-sm', selectedDate === d.full ? 'active' : 'bg-white text-slate-400 border border-slate-100']">
-                        <span class="text-[10px] font-medium">{{ d.weekday }}</span>
+                <div class="date-scroll">
+                    <div v-for="d in dates" :key="d.date" 
+                        @click="selectedDate = d.date"
+                        :class="['date-card', selectedDate === d.date ? 'active' : 'bg-white text-slate-400']">
+                        <span class="text-[11px] font-medium uppercase mb-1">{{ d.weekday }}</span>
                         <span class="text-xl font-bold">{{ d.day }}</span>
                     </div>
                 </div>
 
-                <draggable v-model="currentDayItems" item-key="id" handle=".handle">
-                    <template #item="{element, index}">
-                        <div>
-                            <div v-if="index >= 0" class="flex items-center gap-2 my-2 ml-10 text-xs text-blue-300">
-                                <i :class="['bi', element.transitType === 'drive' ? 'bi-car-front' : 'bi-train-front']"></i>
-                                <span>{{ element.transitTime || '25' }} mins</span>
-                            </div>
-
-                            <div v-if="element.type === '航班'" class="bg-gradient-to-r from-blue-500 to-blue-400 text-white rounded-2xl p-5 shadow-lg mb-4">
-                                <div class="flex justify-between items-center mb-3">
-                                    <span class="text-xs font-bold bg-white/20 px-2 py-1 rounded">FLIGHT</span>
-                                    <span class="font-bold">{{ element.title }}</span>
-                                </div>
-                                <div class="flex justify-between items-center text-center">
-                                    <div><p class="text-2xl font-bold">YVR</p><p class="text-[10px]">Vancouver</p></div>
-                                    <i class="bi bi-airplane"></i>
-                                    <div><p class="text-2xl font-bold">YYZ</p><p class="text-[10px]">Toronto</p></div>
-                                </div>
-                            </div>
-
-                            <div v-else class="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm mb-4 relative">
-                                <div class="handle absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center text-slate-200">
-                                    <i class="bi bi-grip-vertical"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="flex justify-between">
-                                        <h3 class="font-bold text-slate-700" @click="openMap(element.name)">{{ element.name }}</h3>
-                                        <span class="text-[10px] bg-blue-50 text-blue-500 px-2 py-1 rounded-full">{{ element.type }}</span>
-                                    </div>
-                                    <p class="text-xs text-slate-400 mt-1"><i class="bi bi-clock mr-1"></i>{{ element.time }}</p>
-                                    <div class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded-lg">
-                                        {{ element.note }}
-                                    </div>
-                                </div>
+                <div class="mt-4 space-y-4">
+                    <div v-for="(item, index) in currentDaySchedule" :key="index">
+                        <div v-if="index > 0" class="flex items-center gap-3 ml-6 my-2">
+                            <div class="h-8 w-0.5 bg-blue-100"></div>
+                            <div class="flex items-center gap-2 text-[11px] text-blue-400 font-medium">
+                                <i class="bi bi-cursor-fill"></i>
+                                <span>{{ item.travelTime }} mins ({{ item.travelMode }})</span>
                             </div>
                         </div>
-                    </template>
-                </draggable>
-            </div>
 
-            <div v-if="currentTab === 'info'" class="space-y-6">
-                <section class="bg-blue-50 rounded-2xl p-5">
-                    <h2 class="font-bold text-blue-700 mb-3"><i class="bi bi-currency-exchange mr-2"></i>匯率換算</h2>
-                    <div class="space-y-3">
-                        <div class="flex gap-2">
-                            <input type="number" v-model="calcInput" class="w-full rounded-xl p-3 border-none shadow-inner" placeholder="輸入日幣金額 (JPY)">
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 text-center text-sm font-bold text-slate-600">
-                            <div class="bg-white p-3 rounded-xl shadow-sm">≈ {{ (calcInput * 0.052).toFixed(2) }} HKD</div>
-                            <div class="bg-white p-3 rounded-xl shadow-sm">≈ {{ (calcInput * 0.009).toFixed(2) }} CAD</div>
+                        <div class="itinerary-card shadow-sm" @click="openGoogleMaps(item.location)">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-[10px] px-2 py-0.5 rounded-md bg-blue-50 text-blue-500 font-bold uppercase tracking-wider">
+                                    {{ item.category }}
+                                </span>
+                                <span class="text-xs text-slate-400 font-medium">{{ item.time }}</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800 mb-1">{{ item.name }}</h3>
+                            <p class="text-xs text-slate-500 line-clamp-2">{{ item.note }}</p>
+                            
+                            <div class="mt-3 pt-3 border-t border-slate-50 flex items-center justify-between text-blue-500">
+                                <span class="text-[11px] font-bold"><i class="bi bi-geo-alt-fill mr-1"></i>查看地圖</span>
+                                <i class="bi bi-chevron-right text-xs"></i>
+                            </div>
                         </div>
                     </div>
-                </section>
-
-                <section>
-                    <h2 class="font-bold text-slate-700 mb-3 ml-2">住宿資訊</h2>
-                    <div class="bg-white border rounded-2xl p-4 shadow-sm" @click="openMap('3238 East 27th Vancouver')">
-                        <p class="font-bold text-blue-500">Candy Stay</p>
-                        <p class="text-sm text-slate-500">3238 East 27th Vancouver, BC</p>
-                        <button class="mt-3 text-xs bg-slate-100 py-2 px-4 rounded-lg w-full">導航到這裡</button>
-                    </div>
-                </section>
-            </div>
-
-            <div v-if="currentTab === 'shop'" class="text-center py-20">
-                <i class="bi bi-bag-plus text-5xl text-slate-200"></i>
-                <p class="mt-4 text-slate-400">目前尚無購物清單</p>
-            </div>
-            
-            <div v-if="currentTab === 'money'">
-                <div class="bg-slate-800 text-white rounded-2xl p-6 mb-6">
-                    <p class="text-xs text-slate-400">總花費估算 (JPY)</p>
-                    <h2 class="text-3xl font-bold mt-1">¥ 125,400</h2>
                 </div>
             </div>
 
-        </main>
+            <div v-if="currentTab === 'info'" class="pt-10 space-y-8">
+                <section>
+                    <h2 class="text-xl font-bold text-slate-800 mb-4">匯率換算</h2>
+                    <div class="bg-blue-50 rounded-3xl p-6">
+                        <div class="relative mb-4">
+                            <input type="number" v-model="jpyInput" class="w-full bg-white border-none rounded-2xl p-4 text-xl font-bold shadow-sm" placeholder="輸入金額 (JPY)">
+                            <span class="absolute right-4 top-4 text-slate-400 font-bold">JPY</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white/60 p-4 rounded-2xl text-center">
+                                <p class="text-[10px] text-slate-400 mb-1">港幣 HKD</p>
+                                <p class="text-lg font-bold text-blue-600">≈ {{ (jpyInput * 0.052).toFixed(2) }}</p>
+                            </div>
+                            <div class="bg-white/60 p-4 rounded-2xl text-center">
+                                <p class="text-[10px] text-slate-400 mb-1">加幣 CAD</p>
+                                <p class="text-lg font-bold text-blue-600">≈ {{ (jpyInput * 0.0088).toFixed(2) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
 
-        <button class="fixed bottom-8 right-8 w-14 h-14 bg-blue-500 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-50 transition active:scale-90">
+        <button class="fixed bottom-8 right-8 w-14 h-14 bg-blue-500 text-white rounded-full shadow-2xl flex items-center justify-center text-3xl z-50 transition active:scale-90">
             <i class="bi bi-plus-lg"></i>
         </button>
-
     </div>
 
     <script>
@@ -147,48 +213,45 @@
 
         createApp({
             setup() {
-                const currentTab = ref('schedule');
+                const currentTab = ref('itinerary');
                 const selectedDate = ref('2026-06-11');
-                const calcInput = ref(null);
+                const jpyInput = ref(null);
 
                 const tabs = [
-                    { id: 'schedule', icon: 'bi-geo-alt-fill' },
+                    { id: 'itinerary', icon: 'bi-geo-alt-fill' },
                     { id: 'info', icon: 'bi-info-circle-fill' },
                     { id: 'shop', icon: 'bi-basket-fill' },
                     { id: 'money', icon: 'bi-cash-coin' }
                 ];
 
                 const dates = [
-                    { weekday: 'Thu', day: '11', full: '2026-06-11' },
-                    { weekday: 'Fri', day: '12', full: '2026-06-12' },
-                    { weekday: 'Sat', day: '13', full: '2026-06-13' },
-                    { weekday: 'Sun', day: '14', full: '2026-06-14' },
-                    { weekday: 'Mon', day: '15', full: '2026-06-15' },
-                    { weekday: 'Tue', day: '16', full: '2026-06-16' },
+                    { weekday: 'Thu', day: '11', date: '2026-06-11' },
+                    { weekday: 'Fri', day: '12', date: '2026-06-12' },
+                    { weekday: 'Sat', day: '13', date: '2026-06-13' },
+                    { weekday: 'Sun', day: '14', date: '2026-06-14' },
+                    { weekday: 'Mon', day: '15', date: '2026-06-15' },
+                    { weekday: 'Tue', day: '16', date: '2026-06-16' }
                 ];
 
-                const scheduleData = ref({
+                const scheduleData = {
                     '2026-06-11': [
-                        { id: 1, type: '航班', title: 'AC 107', name: 'Vancouver Airport', time: '11:00 AM', note: 'Candy 抵達溫哥華' },
-                        { id: 2, type: '住宿', name: 'Candy Stay', time: '02:00 PM', note: '辦理入住民宿', transitType: 'drive' }
+                        { category: '航班', name: '抵達溫哥華 (YVR)', time: '11:00 AM', location: 'Vancouver International Airport', note: 'Candy 由多倫多抵達，AC 107', travelMode: '大眾運輸', travelTime: '0' },
+                        { category: '住宿', name: '爸媽朋友家', time: '02:00 PM', location: '3238 East 27th Vancouver', note: '辦理入住與休息', travelMode: 'Uber', travelTime: '35' }
                     ],
                     '2026-06-12': [
-                        { id: 3, type: '景點', name: 'Holland America Cruise', time: '12:00 PM', note: '六人準時登船', transitType: 'train' }
+                        { category: '景點', name: 'Holland America Cruise', time: '12:00 PM', location: 'Canada Place, Vancouver', note: '六人集合準時登船', travelMode: '大眾運輸', travelTime: '20' }
                     ]
-                });
-
-                const currentDayItems = computed({
-                    get: () => scheduleData.value[selectedDate.value] || [],
-                    set: (val) => { scheduleData.value[selectedDate.value] = val; }
-                });
-
-                const openMap = (location) => {
-                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}`, '_blank');
                 };
 
-                return { currentTab, tabs, dates, selectedDate, currentDayItems, openMap, calcInput };
+                const currentDaySchedule = computed(() => scheduleData[selectedDate.value] || []);
+
+                const openGoogleMaps = (loc) => {
+                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(loc)}`, '_blank');
+                };
+
+                return { currentTab, tabs, dates, selectedDate, currentDaySchedule, openGoogleMaps, jpyInput };
             }
-        }).component('draggable', window.vuedraggable).mount('#app');
+        }).mount('#app');
     </script>
 </body>
 </html>
